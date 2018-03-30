@@ -11,14 +11,26 @@ namespace TcpHolePunchingClient
         {
 
             CommunicationLayer client = new CommunicationLayer("192.168.1.2", 6000);
-            var localEndPoint = client.client.Client.LocalEndPoint as IPEndPoint;
-            client.SendData(localEndPoint.ToString());
-            string remoteEndPoint2 = client.ReceiveData();
-            string localEndPoint2 = client.ReceiveData();
+            var localEndPoint1 = client.client.Client.LocalEndPoint as IPEndPoint;
+            client.SendData(localEndPoint1.ToString());
 
-            Console.WriteLine("Received data from server {0}", remoteEndPoint2);
-            Console.WriteLine("Received data from server {0}", localEndPoint2);
-            Console.WriteLine("Local End Point {0}", localEndPoint);
+
+            string remoteEndPoint1String = client.ReceiveData();
+            var remoteEndPoint1 = GetIpEndPoint(remoteEndPoint1String);
+            string remoteEndPoint2String = client.ReceiveData();
+            var remoteEndPoint2 = GetIpEndPoint(remoteEndPoint2String);
+            string localEndPoint2String = client.ReceiveData();
+            var localEndPoint2 = GetIpEndPoint(localEndPoint2String);
+
+            Console.WriteLine("Received data from server {0}", remoteEndPoint1String);
+            Console.WriteLine("Received data from server {0}", remoteEndPoint2String);
+            Console.WriteLine("Received data from server {0}", localEndPoint2String);
+            Console.WriteLine("Local End Point {0}", localEndPoint1);
+
+
+            TcpHole tcpHole = new TcpHole();
+            var stream = tcpHole.PunchHole(localEndPoint1, remoteEndPoint1, localEndPoint2, remoteEndPoint2);
+
 
 
             /*
@@ -95,6 +107,19 @@ namespace TcpHolePunchingClient
 
     */
 
+
+        }
+
+        public static IPEndPoint GetIpEndPoint(string ipEndPointString)
+        {
+            var localEndPointList = ipEndPointString.Split(':');
+            var ipAddress = localEndPointList[0].Split('.').Select(i => Convert.ToByte(i)).ToArray();
+            return new IPEndPoint(new IPAddress(ipAddress), int.Parse(localEndPointList[1]));
+
         }
     }
+
+
+
+ 
 }
