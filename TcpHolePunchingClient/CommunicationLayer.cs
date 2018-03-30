@@ -11,13 +11,50 @@ namespace TcpHolePunchingClient
     internal class CommunicationLayer
     {
         private Socket socket;
-        private TcpClient client;
-        private Stream stream;
+        public TcpListener tcpListener;
+        public TcpClient client { get; set; }
+        public Stream stream { get; set; }
 
         public CommunicationLayer(String ip, int port)
         {
             client = new TcpClient(ip, port);
             stream = client.GetStream();
+        }
+
+        public CommunicationLayer(NetworkStream networkStream)
+        {
+            stream = networkStream;
+        }
+
+
+        public CommunicationLayer(IPEndPoint iPEndPoint)
+        {
+            try
+            {
+                tcpListener = new TcpListener(iPEndPoint);
+                tcpListener.Start();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception {0}", e);
+            }
+        }  
+
+        public CommunicationLayer(IPEndPoint iPEndPoint,IPEndPoint remoteEndPoint)
+       {
+            client = new TcpClient(iPEndPoint);
+            client.Connect(remoteEndPoint);
+       }
+
+
+        public void EnableReuseSocket()
+        {
+            socket.ExclusiveAddressUse = false;
+        }
+        public void AcceptConnection()
+        {
+            var socket = tcpListener.AcceptSocket();
+            var stream = new NetworkStream(socket);
         }
 
         public String ReceiveData()
