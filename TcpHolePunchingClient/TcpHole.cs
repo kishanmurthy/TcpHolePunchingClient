@@ -24,6 +24,7 @@ namespace TcpHolePunchingClient
         {
             tcpListener = new TcpListener(iPEndPoint);
             tcpListener.ExclusiveAddressUse = false;
+            tcpListener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             tcpListener.Start(1);
             
            while (!IsSet)
@@ -43,7 +44,8 @@ namespace TcpHolePunchingClient
         public void Connect(IPEndPoint localEndPoint, IPEndPoint remoteEndPoint)
         {
             var client = new TcpClient(localEndPoint);
-
+            client.Client.ExclusiveAddressUse = false;
+            client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             while (!IsSet)
             {
                 try
@@ -65,19 +67,34 @@ namespace TcpHolePunchingClient
 
         public NetworkStream PunchHole(IPEndPoint localEndPoint1, IPEndPoint remoteEndPoint1 , IPEndPoint localEndPoint2 , IPEndPoint remoteEndPoint2)
         {
-            Thread[] threads = new Thread[4];
+            Thread[] threads;
 
-
-            threads[0] = new Thread(() => Accept(localEndPoint1));
+            threads = new Thread[1];
             threads[1] = new Thread(() => Accept(remoteEndPoint1));
-            threads[2] = new Thread(() => Connect(localEndPoint1,localEndPoint2));
-            threads[3] = new Thread(() => Connect(localEndPoint1,remoteEndPoint2));
+            /*
+            if (localEndPoint1.ToString() != remoteEndPoint1.ToString())
+            {
+                threads = new Thread[4];
+                threads[0] = new Thread(() => Accept(localEndPoint1));
+                threads[1] = new Thread(() => Accept(remoteEndPoint1));
+                threads[2] = new Thread(() => Connect(localEndPoint1, localEndPoint2));
+                threads[3] = new Thread(() => Connect(localEndPoint1, remoteEndPoint2));
+
+            }
+            else
+            {
+                threads = new Thread[2];
+                threads[0] = new Thread(() => Accept(localEndPoint1));
+                threads[1] = new Thread(() => Connect(localEndPoint1, remoteEndPoint2));
+            }
+            */
 
             for (int i = 0; i < threads.Length; i++)
                 threads[i].Start();
 
             for (int i = 0; i < threads.Length; i++)
                 threads[i].Join();
+            
             return networkStream;
         }
 

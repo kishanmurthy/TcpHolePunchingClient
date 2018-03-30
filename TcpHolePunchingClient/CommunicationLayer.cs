@@ -16,8 +16,11 @@ namespace TcpHolePunchingClient
         public Stream stream { get; set; }
 
         public CommunicationLayer(String ip, int port)
-        {
-            client = new TcpClient(ip, port);
+        { 
+            client = new TcpClient();
+            client.Client.ExclusiveAddressUse = false;
+            client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            client.Connect(ip, port);
             stream = client.GetStream();
         }
 

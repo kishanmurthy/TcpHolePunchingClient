@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading;
 
 namespace TcpHolePunchingClient
@@ -13,8 +15,8 @@ namespace TcpHolePunchingClient
             CommunicationLayer client = new CommunicationLayer("192.168.1.2", 6000);
             var localEndPoint1 = client.client.Client.LocalEndPoint as IPEndPoint;
             client.SendData(localEndPoint1.ToString());
-
-
+            
+          
             string remoteEndPoint1String = client.ReceiveData();
             var remoteEndPoint1 = GetIpEndPoint(remoteEndPoint1String);
             string remoteEndPoint2String = client.ReceiveData();
@@ -22,6 +24,7 @@ namespace TcpHolePunchingClient
             string localEndPoint2String = client.ReceiveData();
             var localEndPoint2 = GetIpEndPoint(localEndPoint2String);
 
+            //client.client.Client.ExclusiveAddressUse = false;
             Console.WriteLine("Received data from server {0}", remoteEndPoint1String);
             Console.WriteLine("Received data from server {0}", remoteEndPoint2String);
             Console.WriteLine("Received data from server {0}", localEndPoint2String);
@@ -30,11 +33,13 @@ namespace TcpHolePunchingClient
 
             TcpHole tcpHole = new TcpHole();
             var stream = tcpHole.PunchHole(localEndPoint1, remoteEndPoint1, localEndPoint2, remoteEndPoint2);
+            var client2 = new CommunicationLayer(stream);
+
 
 
 
             /*
-            client.client.Client.ExclusiveAddressUse = false;
+            
 
 
             var ip = remoteEndPoint2.Split(':')[0];
@@ -117,9 +122,11 @@ namespace TcpHolePunchingClient
             return new IPEndPoint(new IPAddress(ipAddress), int.Parse(localEndPointList[1]));
 
         }
+
+       
     }
+}
 
 
 
  
-}
